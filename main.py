@@ -33,6 +33,16 @@ enemy_y_axis = random.randint(0, 150)
 enemy_x_axis_change = 1
 enemy_y_axis_change = 40
 
+# bullet attributes
+# bullet status -- ready-- not visible to screen
+# bullet status -- fire-- visible to screen
+bullet_image = pygame.image.load("bullet.png")
+bullet_x_axis = player_x_axis
+bullet_y_axis = 500
+bullet_x_axis_change = 0
+bullet_y_axis_change = 10
+bullet_status = "ready"
+
 
 def player(x, y):
     screen.blit(player_image, (x, y))
@@ -40,6 +50,12 @@ def player(x, y):
 
 def enemy(x, y):
     screen.blit(enemy_image, (x, y))
+
+
+def fire_bullet(x, y):
+    global bullet_status
+    bullet_status = "fire"
+    screen.blit(bullet_image, (x+25, y-50))
 
 
 # main while loop
@@ -59,6 +75,11 @@ while running:
                 player_x_axis_change = 3
             if event.key == pygame.K_LEFT:
                 player_x_axis_change = -3
+            if event.key == pygame.K_SPACE:
+                if bullet_status is "ready":
+                    bullet_x_axis = player_x_axis
+                    fire_bullet(bullet_x_axis, bullet_y_axis)
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 player_x_axis_change = 0
@@ -80,5 +101,11 @@ while running:
         enemy_y_axis += enemy_y_axis_change
     enemy(enemy_x_axis, enemy_y_axis)
     player(player_x_axis, player_y_axis)
+    if bullet_y_axis <= 0:
+        bullet_status = "ready"
+        bullet_y_axis = 500
+    if bullet_status == "fire":
+        bullet_y_axis -= bullet_y_axis_change
+        fire_bullet(bullet_x_axis, bullet_y_axis)
 
     pygame.display.update()
