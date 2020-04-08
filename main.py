@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-
+from pygame import mixer
 # initialization
 pygame.init()
 
@@ -58,7 +58,13 @@ bullet_status = "ready"
 score_value = 0
 score_x_axis = 0
 score_y_axis = 20
-font = pygame.font.Font("freesansbold.ttf", 32)
+font = pygame.font.Font("breakout.otf", 32)
+
+# back ground music
+
+mixer.music.load("background_music.mp3")
+mixer.music.play(-1)
+
 
 
 def display_score(score_axis_x, score_axis_y):
@@ -111,6 +117,8 @@ while running:
             if event.key == pygame.K_LEFT:
                 player_x_axis_change = -3
             if event.key == pygame.K_SPACE:
+                shoot_sound = mixer.Sound("shoot.wav")
+                shoot_sound.play()
                 if bullet_status == "ready":
                     bullet_x_axis = player_x_axis
                     fire_bullet(bullet_x_axis, bullet_y_axis)
@@ -138,6 +146,8 @@ while running:
         is_collision_happen = is_collision(enemy_x_axis[i], enemy_y_axis[i], bullet_x_axis, bullet_y_axis)
         # print(is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis))
         if is_collision_happen:
+            collision_sound = mixer.Sound("explosion.wav")
+            collision_sound.play()
             bullet_y_axis = 500
             bullet_status = "ready"
             score_value += 1
