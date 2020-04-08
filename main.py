@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 # initialization
 pygame.init()
@@ -43,6 +44,8 @@ bullet_x_axis_change = 0
 bullet_y_axis_change = 10
 bullet_status = "ready"
 
+score = 0
+
 
 def player(x, y):
     screen.blit(player_image, (x, y))
@@ -55,7 +58,20 @@ def enemy(x, y):
 def fire_bullet(x, y):
     global bullet_status
     bullet_status = "fire"
-    screen.blit(bullet_image, (x+25, y-50))
+    screen.blit(bullet_image, (x + 25, y - 50))
+
+
+def is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
+    # Distance between two points
+    #         _________________________
+    #    D = V p(x2 − x1)2 + (y2 − y1)2
+
+    distance = math.sqrt(math.pow((enemy_x - bullet_x), 2) + math.pow((enemy_y - bullet_y), 2))
+
+    if distance < 30:  # enemy image in pixel
+        return True
+    else:
+        return False
 
 
 # main while loop
@@ -76,7 +92,7 @@ while running:
             if event.key == pygame.K_LEFT:
                 player_x_axis_change = -3
             if event.key == pygame.K_SPACE:
-                if bullet_status is "ready":
+                if bullet_status == "ready":
                     bullet_x_axis = player_x_axis
                     fire_bullet(bullet_x_axis, bullet_y_axis)
 
@@ -107,5 +123,13 @@ while running:
     if bullet_status == "fire":
         bullet_y_axis -= bullet_y_axis_change
         fire_bullet(bullet_x_axis, bullet_y_axis)
-
+    is_collision_happen = is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis)
+    # print(is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis))
+    if is_collision_happen:
+        bullet_y_axis = 500
+        bullet_status = "ready"
+        score += 1
+        print(score)
+        enemy_x_axis = random.randint(0, 800 - 64)
+        enemy_y_axis = random.randint(0, 150)
     pygame.display.update()
