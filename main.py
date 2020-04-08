@@ -27,12 +27,22 @@ player_x_axis = (screen_width // 2) - 64
 player_y_axis = screen_height - 100
 player_x_axis_change = 0
 
+number_of_enemy = 6
+enemy_image = []
+enemy_x_axis = []
+enemy_y_axis = []
+enemy_x_axis_change = []
+enemy_y_axis_change = []
+for i in range(number_of_enemy):
+    enemy_image.append(pygame.image.load("enemy_1.png"))
+    enemy_x_axis.append(random.randint(0, 800 - 64))
+    enemy_y_axis.append(random.randint(0, 150))
+    enemy_x_axis_change.append(1)
+    enemy_y_axis_change.append(40)
+
+
 # enemy attributes
-enemy_image = pygame.image.load("enemy_1.png")
-enemy_x_axis = random.randint(0, 800 - 64)
-enemy_y_axis = random.randint(0, 150)
-enemy_x_axis_change = 1
-enemy_y_axis_change = 40
+
 
 # bullet attributes
 # bullet status -- ready-- not visible to screen
@@ -51,8 +61,8 @@ def player(x, y):
     screen.blit(player_image, (x, y))
 
 
-def enemy(x, y):
-    screen.blit(enemy_image, (x, y))
+def enemy(x, y, item):
+    screen.blit(enemy_image[item], (x, y))
 
 
 def fire_bullet(x, y):
@@ -107,29 +117,34 @@ while running:
     elif player_x_axis <= 0:
         player_x_axis = 0
 
-    enemy_x_axis += enemy_x_axis_change
+    for i in range(number_of_enemy):
+        enemy_x_axis[i] += enemy_x_axis_change[i]
 
-    if enemy_x_axis >= screen_width - 64:
-        enemy_x_axis_change = -1
-        enemy_y_axis += enemy_y_axis_change
-    elif enemy_x_axis <= 0:
-        enemy_x_axis_change = 1
-        enemy_y_axis += enemy_y_axis_change
-    enemy(enemy_x_axis, enemy_y_axis)
+        if enemy_x_axis[i] >= screen_width - 64:
+            enemy_x_axis_change[i] = -1
+            enemy_y_axis[i] += enemy_y_axis_change[i]
+        elif enemy_x_axis[i] <= 0:
+            enemy_x_axis_change[i] = 1
+            enemy_y_axis[i] += enemy_y_axis_change[i]
+        is_collision_happen = is_collision(enemy_x_axis[i], enemy_y_axis[i], bullet_x_axis, bullet_y_axis)
+        # print(is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis))
+        if is_collision_happen:
+            bullet_y_axis = 500
+            bullet_status = "ready"
+            score += 1
+            print(score)
+            enemy_x_axis[i] = random.randint(0, 800 - 64)
+            enemy_y_axis[i] = random.randint(0, 150)
+
+        enemy(enemy_x_axis[i], enemy_y_axis[i], i)
+
     player(player_x_axis, player_y_axis)
+
     if bullet_y_axis <= 0:
         bullet_status = "ready"
         bullet_y_axis = 500
     if bullet_status == "fire":
         bullet_y_axis -= bullet_y_axis_change
         fire_bullet(bullet_x_axis, bullet_y_axis)
-    is_collision_happen = is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis)
-    # print(is_collision(enemy_x_axis, enemy_y_axis, bullet_x_axis, bullet_y_axis))
-    if is_collision_happen:
-        bullet_y_axis = 500
-        bullet_status = "ready"
-        score += 1
-        print(score)
-        enemy_x_axis = random.randint(0, 800 - 64)
-        enemy_y_axis = random.randint(0, 150)
+
     pygame.display.update()
