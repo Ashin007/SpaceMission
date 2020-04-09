@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 from pygame import mixer
+
 # initialization
 pygame.init()
 
@@ -40,7 +41,6 @@ for i in range(number_of_enemy):
     enemy_x_axis_change.append(1)
     enemy_y_axis_change.append(40)
 
-
 # enemy attributes
 
 
@@ -53,27 +53,29 @@ bullet_y_axis_change = 10
 # bullet status -- ready-- not visible to screen
 # bullet status -- fire-- visible to screen
 bullet_status = "ready"
+stop_bullet = "play"
 
 # score attributes
 score_value = 0
 score_x_axis = 0
 score_y_axis = 20
-font = pygame.font.Font("breakout.otf", 32)
+font_score = pygame.font.Font("breakout.otf", 32)
+font_game_over = pygame.font.Font("breakout.otf", 65)
 
 # back ground music
 
-mixer.music.load("background_music.mp3")
+bg_sound = mixer.music.load("background_music.mp3")
 mixer.music.play(-1)
 
 
-
 def display_score(score_axis_x, score_axis_y):
-    score = font.render("Score : " + str(score_value), True, (255, 255, 255))
+    score = font_score.render("Score : " + str(score_value), True, (255, 255, 255))
     screen.blit(score, (score_axis_x, score_axis_y))
 
 
 def player(x, y):
-    screen.blit(player_image, (x, y))
+    if stop_bullet is not "stop":
+        screen.blit(player_image, (x, y))
 
 
 def enemy(x, y, item):
@@ -81,9 +83,10 @@ def enemy(x, y, item):
 
 
 def fire_bullet(x, y):
-    global bullet_status
+    global bullet_status, stop_bullet
     bullet_status = "fire"
-    screen.blit(bullet_image, (x + 25, y - 50))
+    if stop_bullet is not "stop":
+        screen.blit(bullet_image, (x + 25, y - 50))
 
 
 def is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
@@ -91,12 +94,18 @@ def is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
     #         _________________________
     #    D = V p(x2 − x1)2 + (y2 − y1)2
 
-    distance = math.sqrt(math.pow((enemy_x - bullet_x), 2) + math.pow((enemy_y - bullet_y), 2))
+    if stop_bullet is not "stop":
+        distance = math.sqrt(math.pow((enemy_x - bullet_x), 2) + math.pow((enemy_y - bullet_y), 2))
 
-    if distance < 30:  # enemy image in pixel
-        return True
-    else:
-        return False
+        if distance < 30:  # enemy image in pixel
+            return True
+        else:
+            return False
+
+
+def show_game_over():
+    score = font_game_over.render("Game Over", True, (255, 0, 0))
+    screen.blit(score, (200, 230))
 
 
 # main while loop
@@ -116,9 +125,12 @@ while running:
                 player_x_axis_change = 3
             if event.key == pygame.K_LEFT:
                 player_x_axis_change = -3
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and stop_bullet is not "stop":
                 shoot_sound = mixer.Sound("shoot.wav")
                 shoot_sound.play()
+            # else:
+            #     game_over_sound = mixer.Sound("game_over_sound.mp3")
+            #     game_over_sound.play()
                 if bullet_status == "ready":
                     bullet_x_axis = player_x_axis
                     fire_bullet(bullet_x_axis, bullet_y_axis)
@@ -135,6 +147,12 @@ while running:
         player_x_axis = 0
 
     for i in range(number_of_enemy):
+        if enemy_y_axis[i] >= screen_height - 130:
+            for j in range(number_of_enemy):
+                enemy_y_axis[j] = 2000
+                show_game_over()
+                stop_bullet = "stop"
+            break
         enemy_x_axis[i] += enemy_x_axis_change[i]
 
         if enemy_x_axis[i] >= screen_width - 64:
